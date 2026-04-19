@@ -1,0 +1,87 @@
+# MikroTik + Cursor: practical recommendations (RouterOS 6.49.13)
+
+This note complements `mikrotik-cursor-refresh-ros64913.rsc`.
+
+## Purpose
+
+The script maintains a dynamic IPv4 address-list for Cursor-related domains.
+It helps when your bypass logic is based on destination IP lists.
+
+## Recommended baseline
+
+- Script name: `cursor-refresh`
+- Address-list: `cursor_bypass_v4`
+- Scheduler interval: `1m` (or `30s` if reconnects are frequent)
+- Entry timeout: `30m` (use `20m..60m` depending on network stability)
+
+## Why frequent refresh is needed
+
+`api2.cursor.sh` and CDN-backed domains can rotate through many IPs.
+If refresh is too rare, router can keep stale/bad routes and Cursor may show
+`reconnecting...`.
+
+## Operational recommendations
+
+1. Keep DNS working on router:
+   - configure reachable DNS servers
+   - ensure UDP/TCP 53 is not blocked for the router itself
+
+2. Keep script schedule regular:
+   - recommended: every 1 minute
+   - for unstable links: every 30 seconds
+
+3. Keep timeout moderate:
+   - too long timeout keeps stale IPs
+   - too short timeout can cause churn
+
+4. Use comments for audit:
+   - script tags entries as `cursor-auto <dns-name>`
+   - this makes troubleshooting easier
+
+5. Validate list growth:
+   - monitor address-list size over time
+   - if list grows too large, shorten timeout and keep 1m refresh
+
+## Limitations of IP-based bypass
+
+- Cloud IPs are shared and can host unrelated services.
+- Domain-to-IP mapping can change quickly.
+- Address-list bypass is less precise than domain/SNI-based policy.
+
+If your gateway supports FQDN/SNI policies, prefer those for Cursor domains.
+
+## Minimal domain scope for Cursor
+
+- `*.cursor.sh`
+- `*.cursorapi.com`
+- `*.cursor-cdn.com`
+
+Commonly observed related auth names:
+- `*.workosdns.com`
+- `*.workos-dns.com`
+
+## Useful checks on MikroTik
+
+Print managed entries:
+
+```rsc
+/ip firewall address-list print where list="cursor_bypass_v4"
+```
+
+Force one update run:
+
+```rsc
+/system script run cursor-refresh
+```
+
+Check scheduler:
+
+```rsc
+/system scheduler print where name="cursor-refresh"
+```
+
+View script logs:
+
+```rsc
+/log print where message~"cursor-refresh"
+```
