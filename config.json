@@ -1,0 +1,11 @@
+{
+  "update_interval_seconds": 3600,
+  "ip_sources": [
+    "https://api.ipify.org",
+    "https://ifconfig.me/ip",
+    "https://icanhazip.com"
+  ],
+  "log_level": "info",
+  "retry_attempts": 3,
+  "retry_delay_seconds": 5
+}

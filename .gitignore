@@ -1,0 +1,6 @@
+last_ip.txt
+update_ips.log
+*.swp
+*.swo
+*~
+.DS_Store
