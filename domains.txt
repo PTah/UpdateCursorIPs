@@ -1,0 +1,3 @@
+api2.cursor.sh
+api3.cursor.sh
+downloads.cursor.com
